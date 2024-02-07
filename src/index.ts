@@ -1,4 +1,4 @@
-import { dag, object, func, Directory, Secret } from "@dagger.io/dagger"
+import { dag, object, func, Directory, Secret } from "@dagger.io/dagger";
 
 const exclude = [".git"];
 const SNYK_IMAGE_TAG = "alpine";
@@ -11,9 +11,10 @@ class Snyk {
    */
   @func
   async testCode(
-      src: Directory,
-      token: Secret,
-      severityThreshold?: string
+    src: Directory,
+    token: Secret,
+    severityThreshold?: string,
+    org?: string
   ): Promise<string> {
     const SNYK_SEVERITY_THRESHOLD = severityThreshold || "low";
     const ctr = dag
@@ -27,8 +28,9 @@ class Snyk {
         "snyk",
         "test",
         `--severity-threshold=${SNYK_SEVERITY_THRESHOLD}`,
+        `${org ? `--org=${org}` : ""}`,
       ]);
-    return ctr.stdout()
+    return ctr.stdout();
   }
 
   /**
@@ -36,9 +38,10 @@ class Snyk {
    */
   @func
   async testIac(
-      src: Directory,
-      token: Secret,
-      severityThreshold?: string
+    src: Directory,
+    token: Secret,
+    severityThreshold?: string,
+    org?: string
   ): Promise<string> {
     const SNYK_SEVERITY_THRESHOLD = severityThreshold || "low";
     const ctr = dag
@@ -53,8 +56,9 @@ class Snyk {
         "iac",
         "test",
         `--severity-threshold=${SNYK_SEVERITY_THRESHOLD}`,
+        `${org ? `--org=${org}` : ""}`,
       ]);
-    return ctr.stdout()
+    return ctr.stdout();
   }
 
   /**
@@ -62,8 +66,9 @@ class Snyk {
    */
   @func
   async testContainer(
-      image: string,
-      token: Secret,
+    image: string,
+    token: Secret,
+    org: string
   ): Promise<string> {
     const ctr = dag
       .pipeline("snyk-container")
@@ -75,7 +80,8 @@ class Snyk {
         "container",
         "test",
         image,
+        `${org ? `--org=${org}` : ""}`,
       ]);
-    return ctr.stdout()
+    return ctr.stdout();
   }
 }
